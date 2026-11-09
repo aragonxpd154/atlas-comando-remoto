@@ -115,24 +115,6 @@ Os parâmetros ficam no DB `WebAtlas` e só podem ser alterados pelo TIA Portal.
 - A gravação pela web fica limitada às variáveis declaradas com `AWP_In_Variable` em `cmd.html` (`reqLigar`, `reqDesligar` e `reqReconhecer`).
 - O CLP zera os pedidos no mesmo ciclo em que os lê, e descarta pedidos pendentes na partida.
 
-## Publicar no GitHub
 
-```bash
-cd atlas-comando-remoto
-git init
-git add .
-git commit -m "Atlas Comando Remoto v1.0.0"
-git branch -M main
-git remote add origin https://github.com/aragonxpd154/atlas-comando-remoto.git
-git push -u origin main
-```
-
-> O projeto do TIA Portal (`.ap21`) é binário e não fica versionado no git (veja o `.gitignore`). Os fontes em SCL e a pasta web são a referência. Para guardar o projeto completo, publique o arquivo de arquivamento (`.zap21`) como anexo de uma *Release*.
-
-## Licença
-
-Defina a licença antes de publicar. Por exemplo, MIT para repositório público, ou mantenha o repositório privado se ele contiver dados da rede da empresa.
-
----
 
 Autor: **Marcos Santos** · Transmissão — Rede Gazeta
