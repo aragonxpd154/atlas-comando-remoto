@@ -1,0 +1,42 @@
+// =============================================================================
+//  Atlas Comando Remoto - S7-1200 CPU 1214C DC/DC/RLY (6ES7214-1HG40-0XB0)
+//  Arquivo 3/3 - OB1 (ciclo principal)
+//
+//  Importe este arquivo POR ULTIMO, depois de:
+//    - importar os arquivos 01 e 02;
+//    - criar a tabela de tags (plc/tags_plc.xlsx ou docs/LIGACAO.md);
+//    - configurar as paginas definidas pelo usuario e gerar os blocos
+//      do servidor web (Web control DB = DB333 por padrao).
+//
+//  Se o seu Web control DB tiver outro numero, ajuste CTRL_DB abaixo.
+//  ATENCAO: este arquivo substitui o OB1 "Main" existente no projeto.
+// =============================================================================
+
+ORGANIZATION_BLOCK "Main"
+TITLE = "Main Program Sweep (Cycle)"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Initial_Call : Bool;   // TRUE - Initial call of this OB
+      Remanence : Bool;      // TRUE - Retentive data are available
+   END_VAR
+
+   VAR_TEMP
+      retWWW : Int;
+   END_VAR
+
+BEGIN
+	REGION Servidor web - sincroniza as paginas definidas pelo usuario
+	    #retWWW := WWW(CTRL_DB := 333);
+	END_REGION
+
+	REGION Comando do Atlas
+	    "iAtlasCmd"(diAtlasLigado := "DI_Atlas_Ligado",
+	                diAtlasFalha := "DI_Atlas_Falha",
+	                diChaveRemoto := "DI_Chave_Remoto",
+	                dqLigar => "DQ_Atlas_Ligar",
+	                dqDesligar => "DQ_Atlas_Desligar",
+	                web := "WebAtlas");
+	END_REGION
+
+END_ORGANIZATION_BLOCK

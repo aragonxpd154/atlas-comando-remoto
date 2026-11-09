@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<!-- Arquivo gerado a partir de web/atlas para demonstração (modo simulado, sem CLP). Não carregar no CLP. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas · Comando Remoto (demonstração)</title>
+<style>
+/* Atlas Comando Remoto - estilo leve (sem dependencias externas) */
+:root {
+  --fundo: #0f1419;
+  --cartao: #182029;
+  --borda: #26313d;
+  --texto: #e6edf3;
+  --suave: #8b98a5;
+  --verde: #2ea043;
+  --verde-claro: #3fb950;
+  --vermelho: #da3633;
+  --vermelho-claro: #f85149;
+  --ambar: #d29922;
+  --azul: #388bfd;
+  --raio: 10px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ---------- topo ---------- */
+.topo {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borda);
+  background: #121920;
+}
+.topo-titulo { display: flex; align-items: center; gap: 12px; }
+.topo-marca {
+  font-weight: 800; letter-spacing: .12em; font-size: 13px;
+  padding: 6px 9px; border: 2px solid var(--azul); border-radius: 6px; color: var(--azul);
+}
+.topo h1 { margin: 0; font-size: 17px; font-weight: 650; }
+.topo-sub { margin: 0; color: var(--suave); font-size: 13px; }
+
+.selo {
+  font-size: 12px; font-weight: 650; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid currentColor; white-space: nowrap;
+}
+.selo-neutro { color: var(--suave); }
+.selo-ok { color: var(--verde-claro); }
+.selo-alerta { color: var(--ambar); }
+.selo-erro { color: var(--vermelho-claro); }
+
+/* ---------- layout ---------- */
+main {
+  max-width: 980px; margin: 0 auto; padding: 16px;
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+}
+.cartao {
+  background: var(--cartao); border: 1px solid var(--borda);
+  border-radius: var(--raio); padding: 16px;
+}
+.cartao h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); }
+.cartao h3 { margin: 16px 0 8px; font-size: 13px; color: var(--suave); font-weight: 600; }
+
+/* ---------- estado ---------- */
+.grade-estado { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.item {
+  background: #111820; border: 1px solid var(--borda); border-radius: 8px;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.rotulo { font-size: 12px; color: var(--suave); }
+.valor { font-size: 16px; font-weight: 650; }
+.v-ok { color: var(--verde-claro); }
+.v-erro { color: var(--vermelho-claro); }
+.v-alerta { color: var(--ambar); }
+.v-neutro { color: var(--suave); }
+
+/* ---------- botoes de comando ---------- */
+.botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bt {
+  position: relative; border: 0; border-radius: var(--raio);
+  min-height: 112px; padding: 14px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  color: #fff; font: inherit;
+  transition: transform .06s ease, filter .15s ease, opacity .15s ease;
+}
+.bt:active:not(:disabled) { transform: scale(.98); }
+.bt:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.bt-ligar { background: linear-gradient(180deg, var(--verde-claro), var(--verde)); }
+.bt-desligar { background: linear-gradient(180deg, var(--vermelho-claro), var(--vermelho)); }
+.bt:disabled { cursor: not-allowed; filter: grayscale(.85) brightness(.55); }
+.bt-texto { font-size: 22px; font-weight: 800; letter-spacing: .06em; }
+.bt-saida { font-size: 12px; opacity: .85; }
+.bt-led {
+  position: absolute; top: 10px; right: 10px; width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.bt-led.aceso { background: #fff36b; box-shadow: 0 0 10px 3px #fff36b; }
+
+.mensagem { min-height: 1.4em; margin: 12px 0 0; color: var(--suave); font-size: 14px; }
+.mensagem.erro { color: var(--vermelho-claro); }
+.mensagem.ok { color: var(--verde-claro); }
+
+.alarme {
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--ambar); background: rgba(210,153,34,.12); color: #f0c050;
+  display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+}
+
+.bt-sec, .bt-conf {
+  font: inherit; font-weight: 650; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+}
+.bt-sec { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+.bt-conf { background: var(--azul); color: #fff; border: 0; }
+.bt-conf.ligar { background: var(--verde); }
+.bt-conf.desligar { background: var(--vermelho); }
+
+/* ---------- historico ---------- */
+.lista { margin: 0; display: grid; gap: 6px; }
+.lista div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--borda); padding-bottom: 6px; }
+.lista dt { color: var(--suave); }
+.lista dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.log { margin: 0; padding-left: 18px; font-size: 13px; color: var(--suave); max-height: 160px; overflow: auto; }
+.log li { margin: 2px 0; }
+.log-vazio { list-style: none; margin-left: -18px; }
+
+/* ---------- rodape ---------- */
+.rodape {
+  max-width: 980px; margin: 0 auto; padding: 4px 16px 24px;
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  color: var(--suave); font-size: 13px;
+}
+.link { color: var(--azul); }
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.modal[hidden] { display: none; }
+.modal-caixa {
+  width: 100%; max-width: 420px; background: var(--cartao);
+  border: 1px solid var(--borda); border-radius: 12px; padding: 20px;
+}
+.modal-caixa h2 { margin: 0 0 8px; font-size: 18px; }
+.modal-caixa p { margin: 6px 0; }
+.modal-aviso { color: var(--ambar); font-size: 13px; }
+.modal-botoes { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.modal-tempo { margin-top: 14px; height: 4px; background: var(--borda); border-radius: 2px; overflow: hidden; }
+.modal-tempo div { height: 100%; width: 100%; background: var(--azul); }
+
+@media (max-width: 420px) {
+  .bt { min-height: 96px; }
+  .bt-texto { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-titulo">
+    <span class="topo-marca">ATLAS</span>
+    <div>
+      <h1>Comando Remoto do Transmissor</h1>
+      <p class="topo-sub">Harris Atlas · Fonte Grande · CLP S7-1200</p>
+    </div>
+  </div>
+  <div id="conexao" class="selo selo-neutro" aria-live="polite">Conectando…</div>
+</header>
+
+<main>
+
+  <!-- ===================== ESTADO ===================== -->
+  <section class="cartao" aria-labelledby="t-estado">
+    <h2 id="t-estado">Estado</h2>
+    <div class="grade-estado">
+      <div class="item">
+        <span class="rotulo">Transmissor</span>
+        <span id="vAtlas" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">Falha</span>
+        <span id="vFalha" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">Comando remoto</span>
+        <span id="vRemoto" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">CLP</span>
+        <span id="vEstado" class="valor">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMANDOS ===================== -->
+  <section class="cartao" aria-labelledby="t-cmd">
+    <h2 id="t-cmd">Comandos</h2>
+    <div class="botoes">
+      <button id="btLigar" class="bt bt-ligar" type="button" disabled>
+        <span class="bt-led" id="ledLigar"></span>
+        <span class="bt-texto">LIGAR</span>
+        <span class="bt-saida">Saída Q0.0</span>
+      </button>
+      <button id="btDesligar" class="bt bt-desligar" type="button" disabled>
+        <span class="bt-led" id="ledDesligar"></span>
+        <span class="bt-texto">DESLIGAR</span>
+        <span class="bt-saida">Saída Q0.1</span>
+      </button>
+    </div>
+    <p id="msgCmd" class="mensagem" aria-live="polite"></p>
+
+    <div id="caixaAlarme" class="alarme" hidden>
+      <span>O transmissor não confirmou o último comando dentro do prazo.</span>
+      <button id="btReconhecer" class="bt-sec" type="button">Reconhecer</button>
+    </div>
+  </section>
+
+  <!-- ===================== HISTÓRICO ===================== -->
+  <section class="cartao" aria-labelledby="t-hist">
+    <h2 id="t-hist">Histórico</h2>
+    <dl class="lista">
+      <div><dt>Último comando</dt><dd id="vUltimo">—</dd></div>
+      <div><dt>Comandos LIGAR</dt><dd id="vContLigar">—</dd></div>
+      <div><dt>Comandos DESLIGAR</dt><dd id="vContDesligar">—</dd></div>
+      <div><dt>Pedidos rejeitados</dt><dd id="vContRej">—</dd></div>
+      <div><dt>Pulso / bloqueio</dt><dd id="vTempos">—</dd></div>
+    </dl>
+    <h3>Ações deste navegador</h3>
+    <ol id="logLocal" class="log"><li class="log-vazio">Nenhuma ação nesta sessão.</li></ol>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <span>Firmware da aplicação: <b id="vVersao">—</b></span>
+  <a href="/Portal/Portal.mwsl" class="link">Entrar / sair (página do CLP)</a>
+</footer>
+
+<!-- ===================== CONFIRMAÇÃO ===================== -->
+<div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitulo">
+  <div class="modal-caixa">
+    <h2 id="mTitulo">Confirmar comando</h2>
+    <p id="mTexto"></p>
+    <p class="modal-aviso">A ação será executada no transmissor em operação.</p>
+    <div class="modal-botoes">
+      <button id="mCancelar" class="bt-sec" type="button">Cancelar</button>
+      <button id="mConfirmar" class="bt-conf" type="button">Confirmar</button>
+    </div>
+    <div class="modal-tempo"><div id="mBarra"></div></div>
+  </div>
+</div>
+
+<script>window.ATLAS_DEMO = true;</script>
+<script>
+/*
+ * Atlas Comando Remoto - logica da pagina
+ * Servida pelo servidor web do S7-1200 (paginas definidas pelo usuario).
+ *
+ *  - Le o estado em status.html (JSON gerado com tags AWP) a cada 1 s.
+ *  - Envia comandos por POST em cmd.html (variaveis AWP_In_Variable).
+ *  - Confirma cada comando por um dialogo com tempo limite.
+ *  - Verifica se o CLP realmente aceitou o comando (contadores).
+ *  - Modo demonstracao (sem CLP): abrir o arquivo localmente ou usar ?demo=1.
+ */
+(function () {
+  "use strict";
+
+  var CFG = {
+    urlStatus: "status.html",
+    urlCmd: "cmd.html",
+    db: '"WebAtlas".',          // prefixo das tags no POST
+    intervalo: 1000,            // leitura de estado (ms)
+    falhasParaOffline: 3,       // leituras falhas seguidas -> offline
+    ciclosHeartbeat: 5,         // leituras sem heartbeat mudar -> CLP parado
+    prazoVerificacao: 4000,     // tempo para o CLP aceitar/rejeitar (ms)
+    prazoConfirmacao: 10000     // tempo do dialogo de confirmacao (ms)
+  };
+
+  var DEMO = (window.ATLAS_DEMO === true) ||
+             (location.protocol === "file:") ||
+             (/[?&]demo=1/.test(location.search));
+
+  var TEXTO_ESTADO = { 0: "Pronto", 1: "Pulso LIGAR", 2: "Pulso DESLIGAR", 3: "Bloqueio" };
+  var TEXTO_REJEICAO = {
+    1: "CLP ocupado (pulso ou bloqueio em andamento)",
+    2: "comando remoto não permitido (chave em LOCAL)",
+    3: "LIGAR e DESLIGAR recebidos juntos"
+  };
+  var TEXTO_CMD = { 0: "—", 1: "LIGAR", 2: "DESLIGAR" };
+
+  // ------------------------------------------------------------------
+  var $ = function (id) { return document.getElementById(id); };
+  var st = null;              // ultimo estado lido
+  var falhas = 0;
+  var ultHeartbeat = null, ciclosSemHb = 0;
+  var enviando = false;
+  var pendente = null;        // comando aguardando verificacao
+  var timerModal = null;
+
+  function bool(v) { return v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true"; }
+  function num(v) { var n = parseInt(v, 10); return isNaN(n) ? 0 : n; }
+  function dois(n) { return (n < 10 ? "0" : "") + n; }
+  function hora() { var d = new Date(); return dois(d.getHours()) + ":" + dois(d.getMinutes()) + ":" + dois(d.getSeconds()); }
+
+  function extrairJSON(txt) {
+    // A resposta pode trazer comentarios AWP antes do JSON
+    var i = txt.indexOf("{"), f = txt.lastIndexOf("}");
+    if (i < 0 || f < i) throw new Error("resposta sem JSON");
+    return JSON.parse(txt.substring(i, f + 1));
+  }
+
+  function normalizar(j) {
+    return {
+      estado: num(j.estado),
+      motivoRejeicao: num(j.motivoRejeicao),
+      remotoPermitido: bool(j.remotoPermitido),
+      saidaLigar: bool(j.saidaLigar),
+      saidaDesligar: bool(j.saidaDesligar),
+      atlasLigado: bool(j.atlasLigado),
+      atlasFalha: bool(j.atlasFalha),
+      aguardandoConfirmacao: bool(j.aguardandoConfirmacao),
+      alarmeSemConfirmacao: bool(j.alarmeSemConfirmacao),
+      bloqueioRestante: num(j.bloqueioRestante_ms),
+      cfgPulso: num(j.cfgPulso_ms),
+      cfgBloqueio: num(j.cfgBloqueio_ms),
+      cfgUsaRetorno: bool(j.cfgUsaRetorno),
+      cfgUsaChaveRemoto: bool(j.cfgUsaChaveRemoto),
+      ultimoComando: num(j.ultimoComando),
+      ult: [num(j.ultAno), num(j.ultMes), num(j.ultDia), num(j.ultHora), num(j.ultMin), num(j.ultSeg)],
+      contLigar: num(j.contLigar),
+      contDesligar: num(j.contDesligar),
+      contRejeitados: num(j.contRejeitados),
+      heartbeat: num(j.heartbeat),
+      versao: String(j.versao || "").trim()
+    };
+  }
+
+  // ------------------------------------------------------------------
+  // Comunicacao
+  // ------------------------------------------------------------------
+  function lerEstado() {
+    if (DEMO) { return Promise.resolve(Demo.status()); }
+    return fetch(CFG.urlStatus + "?t=" + Date.now(), { cache: "no-store", credentials: "same-origin" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+      .then(function (t) { return normalizar(extrairJSON(t)); });
+  }
+
+  function enviar(variavel) {
+    if (DEMO) { Demo.comando(variavel); return Promise.resolve(); }
+    var corpo = encodeURIComponent(CFG.db + variavel) + "=1";
+    return fetch(CFG.urlCmd, {
+      method: "POST",
+      cache: "no-store",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: corpo
+    }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.text();
+    }).then(function (t) {
+      if (t.indexOf('"ack"') < 0) {
+        // Normalmente e a pagina de login do CLP -> sessao expirada
+        throw new Error("sem autorização (faça login na página do CLP)");
+      }
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Interface
+  // ------------------------------------------------------------------
+  function selo(texto, classe) {
+    var el = $("conexao");
+    el.textContent = texto;
+    el.className = "selo " + classe;
+  }
+
+  function valor(id, texto, classe) {
+    var el = $(id);
+    el.textContent = texto;
+    el.className = "valor " + (classe || "");
+  }
+
+  function mensagem(texto, classe) {
+    var el = $("msgCmd");
+    el.textContent = texto || "";
+    el.className = "mensagem " + (classe || "");
+  }
+
+  function registrar(texto) {
+    var log = $("logLocal");
+    var vazio = log.querySelector(".log-vazio");
+    if (vazio) log.removeChild(vazio);
+    var li = document.createElement("li");
+    li.textContent = hora() + " — " + texto;
+    log.insertBefore(li, log.firstChild);
+    while (log.children.length > 15) log.removeChild(log.lastChild);
+  }
+
+  function online() {
+    return st !== null && falhas < CFG.falhasParaOffline && ciclosSemHb < CFG.ciclosHeartbeat;
+  }
+
+  function atualizarTela() {
+    if (!st) return;
+
+    // Conexao
+    if (falhas >= CFG.falhasParaOffline) selo("Sem comunicação", "selo-erro");
+    else if (ciclosSemHb >= CFG.ciclosHeartbeat) selo("CLP sem varredura", "selo-alerta");
+    else selo(DEMO ? "Modo demonstração" : "Online", DEMO ? "selo-alerta" : "selo-ok");
+
+    // Estado do transmissor
+    if (!st.cfgUsaRetorno) valor("vAtlas", "Sem retorno", "v-neutro");
+    else if (st.atlasLigado) valor("vAtlas", "LIGADO", "v-ok");
+    else valor("vAtlas", "DESLIGADO", "v-erro");
+
+    valor("vFalha", st.atlasFalha ? "FALHA" : "Normal", st.atlasFalha ? "v-erro" : "v-ok");
+
+    if (!st.cfgUsaChaveRemoto) valor("vRemoto", "Liberado", "v-ok");
+    else valor("vRemoto", st.remotoPermitido ? "Liberado (chave)" : "LOCAL", st.remotoPermitido ? "v-ok" : "v-alerta");
+
+    var tEstado = TEXTO_ESTADO[st.estado] || ("Estado " + st.estado);
+    if (st.estado === 3) tEstado += " " + Math.ceil(st.bloqueioRestante / 1000) + " s";
+    if (st.aguardandoConfirmacao) tEstado += " · aguardando retorno";
+    valor("vEstado", tEstado, st.estado === 0 ? "v-ok" : "v-alerta");
+
+    // LEDs das saidas
+    $("ledLigar").className = "bt-led" + (st.saidaLigar ? " aceso" : "");
+    $("ledDesligar").className = "bt-led" + (st.saidaDesligar ? " aceso" : "");
+
+    // Botoes
+    var livre = online() && st.estado === 0 && st.remotoPermitido && !enviando && !pendente;
+    $("btLigar").disabled = !livre;
+    $("btDesligar").disabled = !livre;
+
+    // Alarme
+    $("caixaAlarme").hidden = !st.alarmeSemConfirmacao;
+
+    // Historico
+    var u = st.ult;
+    var quando = u[0] > 0 ? (dois(u[2]) + "/" + dois(u[1]) + "/" + u[0] + " " + dois(u[3]) + ":" + dois(u[4]) + ":" + dois(u[5])) : "";
+    $("vUltimo").textContent = st.ultimoComando ? (TEXTO_CMD[st.ultimoComando] + (quando ? " · " + quando : "")) : "—";
+    $("vContLigar").textContent = st.contLigar;
+    $("vContDesligar").textContent = st.contDesligar;
+    $("vContRej").textContent = st.contRejeitados;
+    $("vTempos").textContent = (st.cfgPulso / 1000).toFixed(1) + " s / " + (st.cfgBloqueio / 1000).toFixed(0) + " s";
+    $("vVersao").textContent = st.versao || "—";
+  }
+
+  function verificarPendente() {
+    if (!pendente || !st) return;
+    var p = pendente;
+    var decorrido = Date.now() - p.t0;
+
+    if (p.variavel === "reqReconhecer") {
+      if (!st.alarmeSemConfirmacao) { mensagem("Alarme reconhecido.", "ok"); registrar("Alarme reconhecido"); pendente = null; }
+      else if (decorrido > CFG.prazoVerificacao) { mensagem("O CLP não confirmou o reconhecimento.", "erro"); pendente = null; }
+      return;
+    }
+
+    var contAgora = p.variavel === "reqLigar" ? st.contLigar : st.contDesligar;
+    if (contAgora > p.contAntes) {
+      mensagem("Comando " + p.nome + " aceito pelo CLP — pulso enviado.", "ok");
+      registrar(p.nome + " aceito");
+      pendente = null;
+    } else if (st.contRejeitados > p.rejAntes) {
+      var motivo = TEXTO_REJEICAO[st.motivoRejeicao] || "motivo " + st.motivoRejeicao;
+      mensagem("Comando " + p.nome + " rejeitado: " + motivo + ".", "erro");
+      registrar(p.nome + " rejeitado (" + motivo + ")");
+      pendente = null;
+    } else if (decorrido > CFG.prazoVerificacao) {
+      mensagem("O CLP não confirmou o comando " + p.nome + ". Verifique o login e a permissão de escrita.", "erro");
+      registrar(p.nome + " sem confirmação do CLP");
+      pendente = null;
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Ciclo de leitura
+  // ------------------------------------------------------------------
+  function ciclo() {
+    lerEstado().then(function (novo) {
+      falhas = 0;
+      if (ultHeartbeat !== null && novo.heartbeat === ultHeartbeat) ciclosSemHb++;
+      else ciclosSemHb = 0;
+      ultHeartbeat = novo.heartbeat;
+      st = novo;
+      verificarPendente();
+      atualizarTela();
+    }).catch(function () {
+      falhas++;
+      if (falhas >= CFG.falhasParaOffline) {
+        selo("Sem comunicação", "selo-erro");
+        $("btLigar").disabled = true;
+        $("btDesligar").disabled = true;
+      }
+    }).then(function () {
+      setTimeout(ciclo, CFG.intervalo);
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Comandos com confirmacao
+  // ------------------------------------------------------------------
+  function executar(variavel, nome) {
+    if (!st) return;
+    enviando = true;
+    pendente = {
+      variavel: variavel, nome: nome, t0: Date.now(),
+      contAntes: variavel === "reqLigar" ? st.contLigar : st.contDesligar,
+      rejAntes: st.contRejeitados
+    };
+    mensagem("Enviando " + (nome || "comando") + "…", "");
+    atualizarTela();
+    enviar(variavel).catch(function (e) {
+      pendente = null;
+      mensagem("Falha ao enviar: " + e.message + ".", "erro");
+      registrar("Falha ao enviar " + (nome || variavel));
+    }).then(function () {
+      enviando = false;
+      atualizarTela();
+    });
+  }
+
+  function abrirModal(variavel, nome, classe) {
+    $("mTexto").innerHTML = "Enviar comando <b>" + nome + "</b> para o transmissor Atlas?";
+    var bt = $("mConfirmar");
+    bt.textContent = "Confirmar " + nome;
+    bt.className = "bt-conf " + classe;
+    $("modal").hidden = false;
+    $("mCancelar").focus();
+
+    var barra = $("mBarra"), inicio = Date.now();
+    clearInterval(timerModal);
+    timerModal = setInterval(function () {
+      var resto = 1 - (Date.now() - inicio) / CFG.prazoConfirmacao;
+      barra.style.width = Math.max(0, resto * 100) + "%";
+      if (resto <= 0) { fecharModal(); mensagem("Confirmação expirou — nenhum comando enviado.", ""); }
+    }, 100);
+
+    bt.onclick = function () { fecharModal(); executar(variavel, nome); };
+  }
+
+  function fecharModal() {
+    clearInterval(timerModal);
+    $("modal").hidden = true;
+    $("mConfirmar").onclick = null;
+  }
+
+  $("btLigar").addEventListener("click", function () { abrirModal("reqLigar", "LIGAR", "ligar"); });
+  $("btDesligar").addEventListener("click", function () { abrirModal("reqDesligar", "DESLIGAR", "desligar"); });
+  $("btReconhecer").addEventListener("click", function () { executar("reqReconhecer", "Reconhecer alarme"); });
+  $("mCancelar").addEventListener("click", function () { fecharModal(); mensagem("Comando cancelado.", ""); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("modal").hidden) fecharModal(); });
+
+  // ------------------------------------------------------------------
+  // Simulacao local (sem CLP) - reproduz a logica do FB_AtlasCmd
+  // ------------------------------------------------------------------
+  var Demo = !DEMO ? null : (function () {
+    var s = {
+      estado: 0, motivoRejeicao: 0, remotoPermitido: 1, saidaLigar: 0, saidaDesligar: 0,
+      atlasLigado: 1, atlasFalha: 0, aguardandoConfirmacao: 0, alarmeSemConfirmacao: 0,
+      bloqueioRestante_ms: 0, cfgPulso_ms: 1000, cfgBloqueio_ms: 5000, cfgUsaRetorno: 1,
+      cfgUsaChaveRemoto: 0, ultimoComando: 0, ultAno: 0, ultMes: 0, ultDia: 0, ultHora: 0,
+      ultMin: 0, ultSeg: 0, contLigar: 0, contDesligar: 0, contRejeitados: 0, heartbeat: 0,
+      versao: "v1.0.0-demo"
+    };
+    var tEstado = 0;
+    function passo() {
+      var agora = Date.now();
+      s.heartbeat++;
+      if (s.estado === 1 || s.estado === 2) {
+        s.saidaLigar = s.estado === 1 ? 1 : 0; s.saidaDesligar = s.estado === 2 ? 1 : 0;
+        if (agora - tEstado >= s.cfgPulso_ms) {
+          if (s.estado === 1) setTimeout(function () { s.atlasLigado = 1; s.aguardandoConfirmacao = 0; }, 2000);
+          else setTimeout(function () { s.atlasLigado = 0; s.aguardandoConfirmacao = 0; }, 2000);
+          s.estado = 3; tEstado = agora;
+        }
+      } else { s.saidaLigar = 0; s.saidaDesligar = 0; }
+      if (s.estado === 3) {
+        s.bloqueioRestante_ms = Math.max(0, s.cfgBloqueio_ms - (agora - tEstado));
+        if (s.bloqueioRestante_ms === 0) s.estado = 0;
+      } else s.bloqueioRestante_ms = 0;
+    }
+    setInterval(passo, 100);
+    return {
+      status: function () { return normalizar(s); },
+      comando: function (v) {
+        if (v === "reqReconhecer") { s.alarmeSemConfirmacao = 0; return; }
+        if (s.estado !== 0) { s.motivoRejeicao = 1; s.contRejeitados++; return; }
+        var d = new Date();
+        s.estado = v === "reqLigar" ? 1 : 2; tEstado = Date.now();
+        s.ultimoComando = s.estado; s.motivoRejeicao = 0; s.aguardandoConfirmacao = 1;
+        if (v === "reqLigar") s.contLigar++; else s.contDesligar++;
+        s.ultAno = d.getFullYear(); s.ultMes = d.getMonth() + 1; s.ultDia = d.getDate();
+        s.ultHora = d.getHours(); s.ultMin = d.getMinutes(); s.ultSeg = d.getSeconds();
+      }
+    };
+  })();
+
+  ciclo();
+})();
+</script>
+</body>
+</html>

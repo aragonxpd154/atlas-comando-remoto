@@ -1,0 +1,30 @@
+# --- Projeto TIA Portal (binário; versionar só os fontes SCL e a pasta web) ---
+*.ap1[0-9]
+*.ap2[0-9]
+*.zap1[0-9]
+*.zap2[0-9]
+*.al1[0-9]
+*.al2[0-9]
+AdditionalFiles/
+IM/
+System/
+TMP/
+UserFiles/
+Vci/
+XRef/
+Logs/
+*.tmp
+*.lck
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+
+# --- Sistema / editores ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*~

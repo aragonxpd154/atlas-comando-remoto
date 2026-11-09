@@ -1,0 +1,231 @@
+// =============================================================================
+//  Atlas Comando Remoto - S7-1200 CPU 1214C DC/DC/RLY (6ES7214-1HG40-0XB0)
+//  Arquivo 2/3 - Bloco de funcao com a logica de comando
+//
+//  Regras de seguranca implementadas:
+//    1. Uma unica variavel de estado gera as duas saidas -> LIGAR e
+//       DESLIGAR nunca ficam ativas ao mesmo tempo (+ intertravamento extra).
+//    2. Pulso com duracao fixa (o rele nunca fica travado se a rede cair).
+//    3. Bloqueio apos cada comando (evita duplo clique / repeticao).
+//    4. Pedidos simultaneos LIGAR+DESLIGAR sao rejeitados.
+//    5. Pedidos durante pulso/bloqueio sao rejeitados e contabilizados.
+//    6. Na partida do CLP todos os pedidos pendentes sao descartados.
+//    7. Parametros limitados a faixas seguras (LIMIT).
+//    8. Opcional: chave Local/Remoto e confirmacao por retorno de estado.
+// =============================================================================
+
+FUNCTION_BLOCK "FB_AtlasCmd"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      diAtlasLigado : Bool;    // retorno: Atlas ligado / em ar (opcional)
+      diAtlasFalha : Bool;     // retorno: falha sumaria (opcional)
+      diChaveRemoto : Bool;    // chave Local/Remoto: 1 = remoto liberado (opcional)
+   END_VAR
+
+   VAR_OUTPUT
+      dqLigar : Bool;          // rele de comando LIGAR    (Q0.0)
+      dqDesligar : Bool;       // rele de comando DESLIGAR (Q0.1)
+   END_VAR
+
+   VAR_IN_OUT
+      web : "UDT_WebAtlas";    // DB de troca com o servidor web
+   END_VAR
+
+   VAR
+      estado : Int;            // 0=Pronto 1=Pulso LIGAR 2=Pulso DESLIGAR 3=Bloqueio
+      cmdAtual : Int;          // ultimo comando aceito (1/2)
+      inicializado : Bool;     // FALSE apos cada partida (instancia nao retentiva)
+      tPulso {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tBloqueio {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tConfirmacao {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+   END_VAR
+
+   VAR_TEMP
+      agora : DTL;
+      retRelogio : Int;
+      pulso_ms : DInt;
+      bloqueio_ms : DInt;
+      confirmacao_ms : DInt;
+      pedidoLigar : Bool;
+      pedidoDesligar : Bool;
+      pedidoReconhecer : Bool;
+      haPedido : Bool;
+   END_VAR
+
+BEGIN
+	REGION Inicializacao (primeiro ciclo apos partida)
+	    // A instancia e nao retentiva: "inicializado" volta a FALSE em toda
+	    // partida. Qualquer pedido que tenha ficado gravado no DB e descartado.
+	    IF NOT #inicializado THEN
+	        #web.reqLigar := FALSE;
+	        #web.reqDesligar := FALSE;
+	        #web.reqReconhecer := FALSE;
+	        #web.aguardandoConfirmacao := FALSE;
+	        #estado := 0;
+	        #cmdAtual := 0;
+	        #inicializado := TRUE;
+	    END_IF;
+	END_REGION
+
+	REGION Parametros (limitados a faixas seguras)
+	    #pulso_ms := LIMIT(MN := 200, IN := #web.cfgPulso_ms, MX := 5000);
+	    #bloqueio_ms := LIMIT(MN := 1000, IN := #web.cfgBloqueio_ms, MX := 60000);
+	    #confirmacao_ms := LIMIT(MN := 5000, IN := #web.cfgConfirmacao_ms, MX := 600000);
+	END_REGION
+
+	REGION Entradas e diagnostico
+	    #web.atlasLigado := #diAtlasLigado;
+	    #web.atlasFalha := #diAtlasFalha;
+	    #web.remotoPermitido := NOT #web.cfgUsaChaveRemoto OR #diChaveRemoto;
+
+	    IF #web.heartbeat >= 2000000000 THEN
+	        #web.heartbeat := 0;
+	    ELSE
+	        #web.heartbeat := #web.heartbeat + 1;
+	    END_IF;
+	END_REGION
+
+	REGION Captura dos pedidos da web (le e zera no mesmo ciclo)
+	    #pedidoLigar := #web.reqLigar;
+	    #pedidoDesligar := #web.reqDesligar;
+	    #pedidoReconhecer := #web.reqReconhecer;
+	    #web.reqLigar := FALSE;
+	    #web.reqDesligar := FALSE;
+	    #web.reqReconhecer := FALSE;
+	    #haPedido := #pedidoLigar OR #pedidoDesligar;
+	END_REGION
+
+	REGION Temporizadores
+	    #tPulso(IN := (#estado = 1) OR (#estado = 2),
+	            PT := DINT_TO_TIME(#pulso_ms));
+	    #tBloqueio(IN := (#estado = 3),
+	               PT := DINT_TO_TIME(#bloqueio_ms));
+	END_REGION
+
+	REGION Maquina de estados
+	    CASE #estado OF
+	        0:  // ---------------- PRONTO ----------------
+	            IF #haPedido THEN
+	                IF #pedidoLigar AND #pedidoDesligar THEN
+	                    // Conflito: os dois pedidos juntos -> rejeita ambos
+	                    #web.motivoRejeicao := 3;
+	                    #web.contRejeitados := #web.contRejeitados + 1;
+
+	                ELSIF NOT #web.remotoPermitido THEN
+	                    // Chave em LOCAL -> comando remoto nao permitido
+	                    #web.motivoRejeicao := 2;
+	                    #web.contRejeitados := #web.contRejeitados + 1;
+
+	                ELSE
+	                    // Comando aceito
+	                    IF #pedidoLigar THEN
+	                        #cmdAtual := 1;
+	                        #estado := 1;
+	                        #web.contLigar := #web.contLigar + 1;
+	                    ELSE
+	                        #cmdAtual := 2;
+	                        #estado := 2;
+	                        #web.contDesligar := #web.contDesligar + 1;
+	                    END_IF;
+
+	                    #web.ultimoComando := #cmdAtual;
+	                    #web.motivoRejeicao := 0;
+	                    #web.alarmeSemConfirmacao := FALSE;
+	                    #web.aguardandoConfirmacao := #web.cfgUsaRetorno;
+
+	                    // Carimbo de data/hora (hora local - configurar fuso e NTP na CPU)
+	                    #retRelogio := RD_LOC_T(OUT => #agora);
+	                    IF #retRelogio = 0 THEN
+	                        #web.ultAno := UINT_TO_INT(#agora.YEAR);
+	                        #web.ultMes := USINT_TO_INT(#agora.MONTH);
+	                        #web.ultDia := USINT_TO_INT(#agora.DAY);
+	                        #web.ultHora := USINT_TO_INT(#agora.HOUR);
+	                        #web.ultMin := USINT_TO_INT(#agora.MINUTE);
+	                        #web.ultSeg := USINT_TO_INT(#agora.SECOND);
+	                    END_IF;
+	                END_IF;
+	            END_IF;
+
+	        1, 2:  // ---------------- PULSO EM ANDAMENTO ----------------
+	            IF #haPedido THEN
+	                #web.motivoRejeicao := 1;
+	                #web.contRejeitados := #web.contRejeitados + 1;
+	            END_IF;
+	            IF #tPulso.Q THEN
+	                #estado := 3;
+	            END_IF;
+
+	        3:  // ---------------- BLOQUEIO POS-COMANDO ----------------
+	            IF #haPedido THEN
+	                #web.motivoRejeicao := 1;
+	                #web.contRejeitados := #web.contRejeitados + 1;
+	            END_IF;
+	            IF #tBloqueio.Q THEN
+	                #estado := 0;
+	            END_IF;
+
+	        ELSE  // estado invalido -> volta para PRONTO
+	            #estado := 0;
+	    END_CASE;
+	END_REGION
+
+	REGION Confirmacao pelo retorno de estado (opcional)
+	    IF #web.aguardandoConfirmacao THEN
+	        IF ((#cmdAtual = 1) AND #diAtlasLigado)
+	            OR ((#cmdAtual = 2) AND NOT #diAtlasLigado)
+	        THEN
+	            #web.aguardandoConfirmacao := FALSE;
+	        END_IF;
+	    END_IF;
+
+	    #tConfirmacao(IN := #web.aguardandoConfirmacao,
+	                  PT := DINT_TO_TIME(#confirmacao_ms));
+
+	    IF #tConfirmacao.Q THEN
+	        #web.alarmeSemConfirmacao := TRUE;
+	        #web.aguardandoConfirmacao := FALSE;
+	    END_IF;
+
+	    IF #pedidoReconhecer THEN
+	        #web.alarmeSemConfirmacao := FALSE;
+	    END_IF;
+	END_REGION
+
+	REGION Saidas (com intertravamento)
+	    #dqLigar := (#estado = 1);
+	    #dqDesligar := (#estado = 2);
+
+	    // Intertravamento redundante: nunca as duas ao mesmo tempo
+	    IF #dqLigar AND #dqDesligar THEN
+	        #dqLigar := FALSE;
+	        #dqDesligar := FALSE;
+	        #estado := 0;
+	    END_IF;
+
+	    #web.saidaLigar := #dqLigar;
+	    #web.saidaDesligar := #dqDesligar;
+	    #web.estado := #estado;
+
+	    IF #estado = 3 THEN
+	        #web.bloqueioRestante_ms := #bloqueio_ms - TIME_TO_DINT(#tBloqueio.ET);
+	        IF #web.bloqueioRestante_ms < 0 THEN
+	            #web.bloqueioRestante_ms := 0;
+	        END_IF;
+	    ELSE
+	        #web.bloqueioRestante_ms := 0;
+	    END_IF;
+	END_REGION
+
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK "iAtlasCmd"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_AtlasCmd"
+
+BEGIN
+
+END_DATA_BLOCK

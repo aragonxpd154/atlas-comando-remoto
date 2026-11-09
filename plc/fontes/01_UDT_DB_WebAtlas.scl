@@ -1,0 +1,82 @@
+// =============================================================================
+//  Atlas Comando Remoto - S7-1200 CPU 1214C DC/DC/RLY (6ES7214-1HG40-0XB0)
+//  Arquivo 1/3 - Tipo de dados (UDT) e DB de troca com o servidor web
+//
+//  Importar no TIA Portal:
+//    Program blocks > External source files > Add new external file
+//    > selecionar este arquivo > botao direito > "Generate blocks from source"
+//
+//  IMPORTANTE: o DB "WebAtlas" precisa ficar com "Optimized block access"
+//  DESMARCADO (o servidor web do S7-1200 nao acessa DB otimizado via AWP).
+//  O atributo S7_Optimized_Access := 'FALSE' abaixo ja faz isso.
+// =============================================================================
+
+TYPE "UDT_WebAtlas"
+VERSION : 0.1
+   STRUCT
+      // ---------------------------------------------------------------
+      // Requisicoes vindas da pagina web (unicas variaveis gravaveis
+      // pela web - declaradas com AWP_In_Variable em cmd.html).
+      // O CLP le e ZERA estes bits no mesmo ciclo.
+      // ---------------------------------------------------------------
+      reqLigar : Bool;        // 1 = pedido de LIGAR o Atlas
+      reqDesligar : Bool;     // 1 = pedido de DESLIGAR o Atlas
+      reqReconhecer : Bool;   // 1 = reconhecer alarme de "sem confirmacao"
+
+      // ---------------------------------------------------------------
+      // Parametros (alterados SOMENTE pelo TIA Portal; a web so le).
+      // O FB limita os valores a faixas seguras.
+      // ---------------------------------------------------------------
+      cfgPulso_ms : DInt := 1000;          // duracao do pulso de rele (200..5000 ms)
+      cfgBloqueio_ms : DInt := 5000;       // bloqueio apos cada comando (1000..60000 ms)
+      cfgConfirmacao_ms : DInt := 30000;   // prazo p/ retorno confirmar o comando (5000..600000 ms)
+      cfgUsaRetorno : Bool := FALSE;       // TRUE = entrada I0.0 (Atlas ligado) esta cabeada
+      cfgUsaChaveRemoto : Bool := FALSE;   // TRUE = entrada I0.2 (chave Local/Remoto) esta cabeada
+
+      // ---------------------------------------------------------------
+      // Estado (escrito pelo CLP, lido pela web)
+      // ---------------------------------------------------------------
+      estado : Int;                  // 0=Pronto 1=Pulso LIGAR 2=Pulso DESLIGAR 3=Bloqueio
+      motivoRejeicao : Int;          // 0=nenhum 1=ocupado 2=remoto nao permitido 3=conflito
+      remotoPermitido : Bool;        // comando remoto liberado
+      saidaLigar : Bool;             // espelho de Q0.0
+      saidaDesligar : Bool;          // espelho de Q0.1
+      atlasLigado : Bool;            // espelho de I0.0 (retorno de estado)
+      atlasFalha : Bool;             // espelho de I0.1 (falha sumaria)
+      aguardandoConfirmacao : Bool;  // comando enviado, aguardando retorno
+      alarmeSemConfirmacao : Bool;   // retorno nao confirmou dentro do prazo
+      bloqueioRestante_ms : DInt;    // tempo restante de bloqueio
+
+      // ---------------------------------------------------------------
+      // Historico do ultimo comando aceito
+      // ---------------------------------------------------------------
+      ultimoComando : Int;           // 0=nenhum 1=LIGAR 2=DESLIGAR
+      ultAno : Int;
+      ultMes : Int;
+      ultDia : Int;
+      ultHora : Int;
+      ultMin : Int;
+      ultSeg : Int;
+      contLigar : DInt;              // comandos LIGAR aceitos
+      contDesligar : DInt;           // comandos DESLIGAR aceitos
+      contRejeitados : DInt;         // pedidos rejeitados
+
+      // ---------------------------------------------------------------
+      // Diagnostico
+      // ---------------------------------------------------------------
+      heartbeat : DInt;              // incrementa a cada ciclo (pagina detecta CLP vivo)
+      versao : String[16] := 'v1.0.0';
+   END_STRUCT;
+
+END_TYPE
+
+
+DATA_BLOCK "WebAtlas"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+"UDT_WebAtlas"
+
+BEGIN
+
+END_DATA_BLOCK

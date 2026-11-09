@@ -1,0 +1,155 @@
+/* Atlas Comando Remoto - estilo leve (sem dependencias externas) */
+:root {
+  --fundo: #0f1419;
+  --cartao: #182029;
+  --borda: #26313d;
+  --texto: #e6edf3;
+  --suave: #8b98a5;
+  --verde: #2ea043;
+  --verde-claro: #3fb950;
+  --vermelho: #da3633;
+  --vermelho-claro: #f85149;
+  --ambar: #d29922;
+  --azul: #388bfd;
+  --raio: 10px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ---------- topo ---------- */
+.topo {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borda);
+  background: #121920;
+}
+.topo-titulo { display: flex; align-items: center; gap: 12px; }
+.topo-marca {
+  font-weight: 800; letter-spacing: .12em; font-size: 13px;
+  padding: 6px 9px; border: 2px solid var(--azul); border-radius: 6px; color: var(--azul);
+}
+.topo h1 { margin: 0; font-size: 17px; font-weight: 650; }
+.topo-sub { margin: 0; color: var(--suave); font-size: 13px; }
+
+.selo {
+  font-size: 12px; font-weight: 650; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid currentColor; white-space: nowrap;
+}
+.selo-neutro { color: var(--suave); }
+.selo-ok { color: var(--verde-claro); }
+.selo-alerta { color: var(--ambar); }
+.selo-erro { color: var(--vermelho-claro); }
+
+/* ---------- layout ---------- */
+main {
+  max-width: 980px; margin: 0 auto; padding: 16px;
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+}
+.cartao {
+  background: var(--cartao); border: 1px solid var(--borda);
+  border-radius: var(--raio); padding: 16px;
+}
+.cartao h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); }
+.cartao h3 { margin: 16px 0 8px; font-size: 13px; color: var(--suave); font-weight: 600; }
+
+/* ---------- estado ---------- */
+.grade-estado { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.item {
+  background: #111820; border: 1px solid var(--borda); border-radius: 8px;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.rotulo { font-size: 12px; color: var(--suave); }
+.valor { font-size: 16px; font-weight: 650; }
+.v-ok { color: var(--verde-claro); }
+.v-erro { color: var(--vermelho-claro); }
+.v-alerta { color: var(--ambar); }
+.v-neutro { color: var(--suave); }
+
+/* ---------- botoes de comando ---------- */
+.botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bt {
+  position: relative; border: 0; border-radius: var(--raio);
+  min-height: 112px; padding: 14px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  color: #fff; font: inherit;
+  transition: transform .06s ease, filter .15s ease, opacity .15s ease;
+}
+.bt:active:not(:disabled) { transform: scale(.98); }
+.bt:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.bt-ligar { background: linear-gradient(180deg, var(--verde-claro), var(--verde)); }
+.bt-desligar { background: linear-gradient(180deg, var(--vermelho-claro), var(--vermelho)); }
+.bt:disabled { cursor: not-allowed; filter: grayscale(.85) brightness(.55); }
+.bt-texto { font-size: 22px; font-weight: 800; letter-spacing: .06em; }
+.bt-saida { font-size: 12px; opacity: .85; }
+.bt-led {
+  position: absolute; top: 10px; right: 10px; width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.bt-led.aceso { background: #fff36b; box-shadow: 0 0 10px 3px #fff36b; }
+
+.mensagem { min-height: 1.4em; margin: 12px 0 0; color: var(--suave); font-size: 14px; }
+.mensagem.erro { color: var(--vermelho-claro); }
+.mensagem.ok { color: var(--verde-claro); }
+
+.alarme {
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--ambar); background: rgba(210,153,34,.12); color: #f0c050;
+  display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+}
+
+.bt-sec, .bt-conf {
+  font: inherit; font-weight: 650; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+}
+.bt-sec { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+.bt-conf { background: var(--azul); color: #fff; border: 0; }
+.bt-conf.ligar { background: var(--verde); }
+.bt-conf.desligar { background: var(--vermelho); }
+
+/* ---------- historico ---------- */
+.lista { margin: 0; display: grid; gap: 6px; }
+.lista div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--borda); padding-bottom: 6px; }
+.lista dt { color: var(--suave); }
+.lista dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.log { margin: 0; padding-left: 18px; font-size: 13px; color: var(--suave); max-height: 160px; overflow: auto; }
+.log li { margin: 2px 0; }
+.log-vazio { list-style: none; margin-left: -18px; }
+
+/* ---------- rodape ---------- */
+.rodape {
+  max-width: 980px; margin: 0 auto; padding: 4px 16px 24px;
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  color: var(--suave); font-size: 13px;
+}
+.link { color: var(--azul); }
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.modal[hidden] { display: none; }
+.modal-caixa {
+  width: 100%; max-width: 420px; background: var(--cartao);
+  border: 1px solid var(--borda); border-radius: 12px; padding: 20px;
+}
+.modal-caixa h2 { margin: 0 0 8px; font-size: 18px; }
+.modal-caixa p { margin: 6px 0; }
+.modal-aviso { color: var(--ambar); font-size: 13px; }
+.modal-botoes { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.modal-tempo { margin-top: 14px; height: 4px; background: var(--borda); border-radius: 2px; overflow: hidden; }
+.modal-tempo div { height: 100%; width: 100%; background: var(--azul); }
+
+@media (max-width: 420px) {
+  .bt { min-height: 96px; }
+  .bt-texto { font-size: 19px; }
+}

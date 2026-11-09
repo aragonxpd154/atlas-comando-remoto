@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas · Comando Remoto</title>
+<link rel="stylesheet" href="css/atlas.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-titulo">
+    <span class="topo-marca">ATLAS</span>
+    <div>
+      <h1>Comando Remoto do Transmissor</h1>
+      <p class="topo-sub">Harris Atlas · Fonte Grande · CLP S7-1200</p>
+    </div>
+  </div>
+  <div id="conexao" class="selo selo-neutro" aria-live="polite">Conectando…</div>
+</header>
+
+<main>
+
+  <!-- ===================== ESTADO ===================== -->
+  <section class="cartao" aria-labelledby="t-estado">
+    <h2 id="t-estado">Estado</h2>
+    <div class="grade-estado">
+      <div class="item">
+        <span class="rotulo">Transmissor</span>
+        <span id="vAtlas" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">Falha</span>
+        <span id="vFalha" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">Comando remoto</span>
+        <span id="vRemoto" class="valor">—</span>
+      </div>
+      <div class="item">
+        <span class="rotulo">CLP</span>
+        <span id="vEstado" class="valor">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMANDOS ===================== -->
+  <section class="cartao" aria-labelledby="t-cmd">
+    <h2 id="t-cmd">Comandos</h2>
+    <div class="botoes">
+      <button id="btLigar" class="bt bt-ligar" type="button" disabled>
+        <span class="bt-led" id="ledLigar"></span>
+        <span class="bt-texto">LIGAR</span>
+        <span class="bt-saida">Saída Q0.0</span>
+      </button>
+      <button id="btDesligar" class="bt bt-desligar" type="button" disabled>
+        <span class="bt-led" id="ledDesligar"></span>
+        <span class="bt-texto">DESLIGAR</span>
+        <span class="bt-saida">Saída Q0.1</span>
+      </button>
+    </div>
+    <p id="msgCmd" class="mensagem" aria-live="polite"></p>
+
+    <div id="caixaAlarme" class="alarme" hidden>
+      <span>O transmissor não confirmou o último comando dentro do prazo.</span>
+      <button id="btReconhecer" class="bt-sec" type="button">Reconhecer</button>
+    </div>
+  </section>
+
+  <!-- ===================== HISTÓRICO ===================== -->
+  <section class="cartao" aria-labelledby="t-hist">
+    <h2 id="t-hist">Histórico</h2>
+    <dl class="lista">
+      <div><dt>Último comando</dt><dd id="vUltimo">—</dd></div>
+      <div><dt>Comandos LIGAR</dt><dd id="vContLigar">—</dd></div>
+      <div><dt>Comandos DESLIGAR</dt><dd id="vContDesligar">—</dd></div>
+      <div><dt>Pedidos rejeitados</dt><dd id="vContRej">—</dd></div>
+      <div><dt>Pulso / bloqueio</dt><dd id="vTempos">—</dd></div>
+    </dl>
+    <h3>Ações deste navegador</h3>
+    <ol id="logLocal" class="log"><li class="log-vazio">Nenhuma ação nesta sessão.</li></ol>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <span>Firmware da aplicação: <b id="vVersao">—</b></span>
+  <a href="/Portal/Portal.mwsl" class="link">Entrar / sair (página do CLP)</a>
+</footer>
+
+<!-- ===================== CONFIRMAÇÃO ===================== -->
+<div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitulo">
+  <div class="modal-caixa">
+    <h2 id="mTitulo">Confirmar comando</h2>
+    <p id="mTexto"></p>
+    <p class="modal-aviso">A ação será executada no transmissor em operação.</p>
+    <div class="modal-botoes">
+      <button id="mCancelar" class="bt-sec" type="button">Cancelar</button>
+      <button id="mConfirmar" class="bt-conf" type="button">Confirmar</button>
+    </div>
+    <div class="modal-tempo"><div id="mBarra"></div></div>
+  </div>
+</div>
+
+<script src="js/atlas.js"></script>
+</body>
+</html>
