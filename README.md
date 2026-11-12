@@ -117,4 +117,4 @@ Os parâmetros ficam no DB `WebAtlas` e só podem ser alterados pelo TIA Portal.
 
 
 
-Autor: **Marcos Santos** · Transmissão — Rede Gazeta
+Autor: **Marcos Santos** · Transmissão - Rede Gazeta
