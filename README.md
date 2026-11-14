@@ -4,15 +4,6 @@
 
 Interface web para **ligar e desligar o transmissor Harris Atlas** por contato seco, usando um CLP **Siemens S7-1200 CPU 1214C DC/DC/RLY** (`6ES7214-1HG40-0XB0`). A página web roda no próprio servidor web do CLP, sem PC ou servidor intermediário.
 
-```
- Navegador (NOC / notebook)                 CLP S7-1200 1214C DC/DC/RLY                Harris Atlas
- ┌──────────────────────┐   HTTPS (VLAN    ┌──────────────────────────────┐   contato  ┌──────────────────┐
- │ /awp/atlas/index.html│── de gerência) ─►│ Servidor web (páginas AWP)   │    seco    │ Controle remoto  │
- │  [LIGAR] [DESLIGAR]  │◄─ status.html ───│ FB_AtlasCmd (pulso+intertrav)│───────────►│  ON  ◄─ Q0.0 → GND│
- └──────────────────────┘    (JSON 1 s)    │ Q0.0 LIGAR   Q0.1 DESLIGAR   │            │  OFF ◄─ Q0.1 → GND│
-                                           │ I0.0 retorno (opcional)      │◄───────────│  status (opc.)   │
-                                           └──────────────────────────────┘            └──────────────────┘
-```
 
 ## Funcionalidades
 
